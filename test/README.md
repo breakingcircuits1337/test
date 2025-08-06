@@ -89,6 +89,16 @@ You can now use these commands via Typer or voice:
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 
+## Text + Voice Chat
+
+You can chat naturally in text (with TTS speech for replies) using:
+
+```bash
+uv run python commands/template.py chat
+```
+
+Type your messages and Ada will reply and speak.
+
 _If ElevenLabs TTS is unavailable or fails, the assistant automatically falls back to local speech output._
 
 **Voice example:**  

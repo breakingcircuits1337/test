@@ -1,4 +1,5 @@
 import typer
+import sys
 
 @app.command()
 def ip_port_scan(target: str = typer.Argument(..., help="Target IP/CIDR or comma-separated list"),
@@ -12,6 +13,32 @@ def ip_port_scan(target: str = typer.Argument(..., help="Target IP/CIDR or comma
     result = ipport_wrapper.scan(target, port_mode, custom_ports, threads, timeout, no_discover)
     typer.echo(result)
     return result
+
+@app.command()
+def chat():
+    """Start a natural language text+voice chat with Ada."""
+    from modules.base_assistant import PlainAssistant
+    from modules.utils import create_session_logger_id, setup_logging
+
+    session_id = create_session_logger_id()
+    logger = setup_logging(session_id)
+    logger.info(f"Starting interactive chat session {session_id}")
+    assistant = PlainAssistant(logger, session_id)
+
+    print("Type your message (or 'exit' to quit):")
+    while True:
+        try:
+            text = input("You: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting chat.")
+            break
+        if text.lower() in {"exit", "quit"}:
+            print("Exiting chat.")
+            break
+        if not text:
+            continue
+        resp = assistant.process_text(text)
+        print(f"Ada: {resp}")
 
 @app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),

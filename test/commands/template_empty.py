@@ -12,6 +12,12 @@ def ip_port_scan(target: str = typer.Argument(..., help="Target IP/CIDR or comma
     return ipport_wrapper.scan(target, port_mode, custom_ports, threads, timeout, no_discover)
 
 @app.command()
+def chat():
+    """(Stub) Start a natural language chat with Ada."""
+    print("Text chat not implemented in template_empty.py (stub).")
+    pass
+
+@app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
                  count: int = typer.Option(1, "--count", help="Number of packets"),
                  packet_size: int = typer.Option(56, "--size", help="Packet size"),
