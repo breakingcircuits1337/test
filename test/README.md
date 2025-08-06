@@ -92,6 +92,16 @@ _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python en
 **Voice example:**  
 Say: “Ada, ping 8.8.8.8 three times”
 
+## Gradio Web UI
+
+Start the assistant's Web UI via CLI:
+
+```bash
+uv run python commands/template.py launch-webui --ip 0.0.0.0 --port 9000
+```
+
+_Note: Requires `browser-use`, `playwright`, `langchain-ollama`, and `pillow` for full Web UI functionality._
+
 ## Network Diagnostics
 
 - `network_ping` — ping a host (`Ada, ping 8.8.8.8 three times`)

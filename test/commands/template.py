@@ -71,3 +71,11 @@ def network_tcp_test(host: str = typer.Argument(..., help="Host for TCP test"),
     result = network_skills_wrapper.tcp_test(host, port, timeout)
     typer.echo(result)
     return result
+
+@app.command()
+def launch_webui(ip: str = typer.Option("127.0.0.1", "--ip"),
+                 port: int = typer.Option(7788, "--port"),
+                 theme: str = typer.Option("Ocean", "--theme")):
+    """Start the Gradio Web UI."""
+    from modules import webui_launcher
+    typer.echo(webui_launcher.launch(ip, port, theme))
