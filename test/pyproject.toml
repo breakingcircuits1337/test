@@ -1,0 +1,26 @@
+[project]
+name = "paic-python-starter"
+version = "0.1.1"
+description = "PAIC Python Starter"
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+dependencies = [
+    "anthropic>=0.39.0",
+    "google-generativeai>=0.8.3",
+    "llm>=0.18",
+    "llm-claude-3>=0.9",
+    "llm-gemini>=0.4.2",
+    "ollama>=0.4.1",
+    "openai[realtime]>=1.59.0",
+    "pydantic>=2.10.2",
+    "pytest>=8.3.3",
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0.2",
+    "typer>=0.13.1",
+    "rich>=13.9.4",
+    "realtimestt>=0.3.93",
+    "dpath>=2.2.0",
+    "elevenlabs>=1.50.3",
+    "realtimetts[system]==0.4.40",
+    "pyttsx3>=2.98",
+]
