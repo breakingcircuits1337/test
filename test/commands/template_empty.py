@@ -18,6 +18,11 @@ def chat():
     pass
 
 @app.command()
+def voice_chat():
+    """(Stub) Start voice conversation with Ada (uses STT)."""
+    pass
+
+@app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
                  count: int = typer.Option(1, "--count", help="Number of packets"),
                  packet_size: int = typer.Option(56, "--size", help="Packet size"),

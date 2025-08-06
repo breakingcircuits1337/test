@@ -41,6 +41,12 @@ def chat():
         print(f"Ada: {resp}")
 
 @app.command()
+def voice_chat():
+    """Start voice conversation with Ada (uses STT)."""
+    import subprocess, sys
+    subprocess.run([sys.executable, "main_base_assistant.py", "chat"])
+
+@app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
                  count: int = typer.Option(1, "--count", help="Number of packets"),
                  packet_size: int = typer.Option(56, "--size", help="Packet size"),

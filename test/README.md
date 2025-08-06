@@ -97,6 +97,12 @@ You can chat naturally in text (with TTS speech for replies) using:
 uv run python commands/template.py chat
 ```
 
+Or use the voice interface (speech-to-text, always-on):
+
+```bash
+uv run python commands/template.py voice-chat
+```
+
 Type your messages and Ada will reply and speak.
 
 _If ElevenLabs TTS is unavailable or fails, the assistant automatically falls back to local speech output._
