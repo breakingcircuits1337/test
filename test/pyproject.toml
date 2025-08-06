@@ -36,4 +36,7 @@ dependencies = [
     "pillow>=10.3.0",
     "pvporcupine>=3.0.1",
     "sounddevice>=0.4.6",
+    "python-nmap>=0.7.2",
+    "shodan>=1.29.0",
+    "censys-search>=2.2.5",
 ]

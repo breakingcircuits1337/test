@@ -47,6 +47,45 @@ def voice_chat():
     subprocess.run([sys.executable, "main_base_assistant.py", "chat"])
 
 @app.command()
+def nmap_scan(target: str = typer.Argument(..., help="Target IP or domain"),
+              flags: str = typer.Option("-sV -T4", "--flags", help="nmap flags")):
+    """Run nmap scan with flags."""
+    from modules import security_tools
+    typer.echo(security_tools.nmap_scan(target, flags))
+
+@app.command()
+def nikto_scan(url: str = typer.Argument(..., help="Target URL"),
+               options: str = typer.Option("", "--options", help="Nikto options")):
+    """Run nikto web vulnerability scan."""
+    from modules import security_tools
+    typer.echo(security_tools.nikto_scan(url, options))
+
+@app.command()
+def wapiti_scan(url: str = typer.Argument(..., help="Target URL"),
+                scope: str = typer.Option("folder", "--scope", help="Wapiti scope")):
+    """Run wapiti web scanner."""
+    from modules import security_tools
+    typer.echo(security_tools.wapiti_scan(url, scope))
+
+@app.command()
+def shodan_lookup(query: str = typer.Argument(..., help="Shodan search query")):
+    """Query Shodan for internet-facing hosts."""
+    from modules import security_tools
+    typer.echo(security_tools.shodan_lookup(query))
+
+@app.command()
+def censys_lookup(ip: str = typer.Argument(..., help="IP address")):
+    """Lookup host info via Censys."""
+    from modules import security_tools
+    typer.echo(security_tools.censys_lookup(ip))
+
+@app.command()
+def exploit_search(keyword: str = typer.Argument(..., help="Keyword or CVE to search exploits for")):
+    """Search Exploit-DB or local searchsploit for exploits."""
+    from modules import security_tools
+    typer.echo(security_tools.exploit_search(keyword))
+
+@app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
                  count: int = typer.Option(1, "--count", help="Number of packets"),
                  packet_size: int = typer.Option(56, "--size", help="Packet size"),

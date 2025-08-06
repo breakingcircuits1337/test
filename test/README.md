@@ -77,7 +77,7 @@ Open `scratchpad.md` to see the command that was generated.
   # then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
   ```
 
-## Network Diagnostic Skills
+## Network & Security Skills
 
 You can now use these commands via Typer or voice:
 - `network_ping` – Ping a host
@@ -86,6 +86,15 @@ You can now use these commands via Typer or voice:
 - `network_port_scan` – TCP SYN port scan on a host
 - `network_interface_info` – Show all network interface info (as JSON)
 - `network_tcp_test` – Test TCP connection to a host/port
+
+- `nmap_scan` – Run nmap for advanced port/service scans
+- `nikto_scan` – Nikto web vulnerability scan
+- `wapiti_scan` – Wapiti web vulnerability scan
+- `shodan_lookup` – Search Shodan for Internet-exposed hosts/services
+- `censys_lookup` – Query Censys for asset details
+- `exploit_search` – Search Exploit-DB or local searchsploit for exploits
+
+_Most security tools require the relevant external tool and/or API key._
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 

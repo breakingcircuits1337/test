@@ -23,6 +23,36 @@ def voice_chat():
     pass
 
 @app.command()
+def nmap_scan(target: str = typer.Argument(...), flags: str = typer.Option("-sV -T4", "--flags")):
+    """Stub nmap scan."""
+    pass
+
+@app.command()
+def nikto_scan(url: str = typer.Argument(...), options: str = typer.Option("", "--options")):
+    """Stub nikto scan."""
+    pass
+
+@app.command()
+def wapiti_scan(url: str = typer.Argument(...), scope: str = typer.Option("folder", "--scope")):
+    """Stub wapiti scan."""
+    pass
+
+@app.command()
+def shodan_lookup(query: str = typer.Argument(...)):
+    """Stub shodan lookup."""
+    pass
+
+@app.command()
+def censys_lookup(ip: str = typer.Argument(...)):
+    """Stub censys lookup."""
+    pass
+
+@app.command()
+def exploit_search(keyword: str = typer.Argument(...)):
+    """Stub exploit search."""
+    pass
+
+@app.command()
 def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
                  count: int = typer.Option(1, "--count", help="Number of packets"),
                  packet_size: int = typer.Option(56, "--size", help="Packet size"),
