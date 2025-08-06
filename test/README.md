@@ -107,6 +107,8 @@ Type your messages and Ada will reply and speak.
 
 _If ElevenLabs TTS is unavailable or fails, the assistant automatically falls back to local speech output._
 
+_On-device wake-word detection (Porcupine) is used for voice commands; works fully offline._
+
 **Voice example:**  
 Say: “Ada, ping 8.8.8.8 three times”
 

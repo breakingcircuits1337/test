@@ -27,7 +27,7 @@ from modules.assistant_config import get_config
 
 
 class PlainAssistant:
-    def __init__(self, logger: logging.Logger, session_id: str):
+    def __init__(self, logger: logging.Logger, session_id: str, interrupt_flag=None):
         self.logger = logger
         self.session_id = session_id
         self.conversation_history = []
@@ -36,6 +36,7 @@ class PlainAssistant:
         self.voice_type = get_config("base_assistant.voice")
         self.elevenlabs_voice = get_config("base_assistant.elevenlabs_voice")
         self.brain = get_config("base_assistant.brain")
+        self.interrupt_flag = interrupt_flag  # For TTS interruption
 
         # Initialize appropriate TTS engine
         self.engine = None
@@ -60,6 +61,8 @@ class PlainAssistant:
             )
         else:
             raise ValueError(f"Unsupported voice type: {self.voice_type}")
+
+        self._tts_thread = None  # For TTS interruption
 
     def _ensure_local_tts_initialized(self):
         if not hasattr(self, "engine") or self.engine is None:
@@ -120,37 +123,77 @@ class PlainAssistant:
             raise
 
     def speak(self, text: str):
-        """Convert text to speech using configured engine, with fallback."""
+        """Convert text to speech using configured engine, with interruption support."""
         self.logger.info(f"🔊 Speaking: {text}")
         if self.voice_type == "local":
             self._ensure_local_tts_initialized()
-            try:
-                self.engine.say(text)
-                self.engine.runAndWait()
-            except Exception as e:
-                self.logger.error(f"❌ Local TTS error: {e}")
-        elif self.voice_type == "realtime-tts":
-            try:
-                self.stream.feed(text)
-                self.stream.play()
-            except Exception as e:
-                self.logger.error(f"❌ RealtimeTTS error: {e}")
-        elif self.voice_type == "elevenlabs":
-            try:
-                audio = self.elevenlabs_client.generate(
-                    text=text,
-                    voice=self.elevenlabs_voice,
-                    model="eleven_turbo_v2",
-                    stream=False,
-                )
-                play(audio)
-            except Exception as e:
-                self.logger.warning(f"⚠️ ElevenLabs TTS failed ({e}); falling back to local TTS.")
-                self.voice_type = "local"
-                self._ensure_local_tts_initialized()
+            def tts_func():
                 try:
                     self.engine.say(text)
                     self.engine.runAndWait()
-                except Exception as e2:
-                    self.logger.error(f"❌ Local TTS error (fallback): {e2}")
+                except Exception as e:
+                    self.logger.error(f"❌ Local TTS error: {e}")
+            self._tts_thread = threading.Thread(target=tts_func)
+            self._tts_thread.start()
+            # Interruption monitoring
+            while self._tts_thread.is_alive():
+                if self.interrupt_flag and self.interrupt_flag.is_set():
+                    self.logger.info("🔊 TTS interrupted by user speech.")
+                    try:
+                        self.engine.stop()
+                    except Exception:
+                        pass
+                    break
+                time.sleep(0.2)
+            self._tts_thread.join(timeout=0.1)
+        elif self.voice_type == "realtime-tts":
+            def tts_func():
+                try:
+                    self.stream.feed(text)
+                    self.stream.play()
+                except Exception as e:
+                    self.logger.error(f"❌ RealtimeTTS error: {e}")
+            self._tts_thread = threading.Thread(target=tts_func)
+            self._tts_thread.start()
+            while self._tts_thread.is_alive():
+                if self.interrupt_flag and self.interrupt_flag.is_set():
+                    self.logger.info("🔊 RealtimeTTS interrupted by user speech.")
+                    try:
+                        self.stream.stop()
+                    except Exception:
+                        pass
+                    break
+                time.sleep(0.2)
+            self._tts_thread.join(timeout=0.1)
+        elif self.voice_type == "elevenlabs":
+            def tts_func():
+                try:
+                    # Stream in chunks for interruption
+                    audio_stream = self.elevenlabs_client.generate(
+                        text=text,
+                        voice=self.elevenlabs_voice,
+                        model="eleven_turbo_v2",
+                        stream=True,
+                    )
+                    for chunk in audio_stream:
+                        if self.interrupt_flag and self.interrupt_flag.is_set():
+                            self.logger.info("🔊 ElevenLabs TTS interrupted by user speech.")
+                            break
+                        play(chunk)
+                except Exception as e:
+                    self.logger.warning(f"⚠️ ElevenLabs TTS failed ({e}); falling back to local TTS.")
+                    self.voice_type = "local"
+                    self._ensure_local_tts_initialized()
+                    try:
+                        self.engine.say(text)
+                        self.engine.runAndWait()
+                    except Exception as e2:
+                        self.logger.error(f"❌ Local TTS error (fallback): {e2}")
+            self._tts_thread = threading.Thread(target=tts_func)
+            self._tts_thread.start()
+            while self._tts_thread.is_alive():
+                if self.interrupt_flag and self.interrupt_flag.is_set():
+                    break
+                time.sleep(0.2)
+            self._tts_thread.join(timeout=0.1)
         self.logger.info(f"🔊 Spoken: {text}")
