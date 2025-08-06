@@ -98,6 +98,16 @@ _Most security tools require the relevant external tool and/or API key._
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 
+## Background Jobs (Celery)
+
+Long-running tasks (like port scans, nmap) can run in the background:
+```bash
+celery -A modules.celery_app.celery_app worker --loglevel=info
+uv run python commands/template.py ip-port-scan ... --async
+uv run python commands/template.py nmap-scan ... --async
+uv run python commands/template.py job-status <task-id>
+```
+
 ## Text + Voice Chat
 
 You can chat naturally in text (with TTS speech for replies) using:

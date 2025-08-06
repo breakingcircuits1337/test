@@ -7,12 +7,40 @@ def ip_port_scan(target: str = typer.Argument(..., help="Target IP/CIDR or comma
                  custom_ports: str = typer.Option("", "--custom", help="Custom port range or list when mode is Custom Range/List"),
                  threads: int = typer.Option(50, "--threads", help="Number of concurrent threads (1-500)"),
                  timeout: float = typer.Option(0.5, "--timeout", help="Timeout seconds per connection (0.1-10)"),
-                 no_discover: bool = typer.Option(False, "--no-discover", help="Skip ARP host discovery")):
+                 no_discover: bool = typer.Option(False, "--no-discover", help="Skip ARP host discovery"),
+                 async_: bool = typer.Option(False, "--async", help="Run in background with Celery")):
     """Run the LAN IP & port scanner from ipport.py head-less and print the results."""
-    from modules import ipport_wrapper
-    result = ipport_wrapper.scan(target, port_mode, custom_ports, threads, timeout, no_discover)
-    typer.echo(result)
-    return result
+    if async_:
+        from modules.tasks import ip_port_scan_task
+        job = ip_port_scan_task.delay(target, port_mode, custom_ports, threads, timeout, no_discover)
+        typer.echo(f"Task submitted to Celery: {job.id}")
+        return job.id
+    else:
+        from modules import ipport_wrapper
+        result = ipport_wrapper.scan(target, port_mode, custom_ports, threads, timeout, no_discover)
+        typer.echo(result)
+        return result
+
+@app.command()
+def nmap_scan(target: str = typer.Argument(..., help="Target IP or domain"),
+              flags: str = typer.Option("-sV -T4", "--flags", help="nmap flags"),
+              async_: bool = typer.Option(False, "--async", help="Run in background with Celery")):
+    """Run nmap scan with flags."""
+    if async_:
+        from modules.tasks import nmap_scan_task
+        job = nmap_scan_task.delay(target, flags)
+        typer.echo(f"Task submitted to Celery: {job.id}")
+        return job.id
+    else:
+        from modules import security_tools
+        typer.echo(security_tools.nmap_scan(target, flags))
+
+@app.command()
+def job_status(job_id:str):
+    """Check status/result of Celery job."""
+    from modules.celery_app import celery_app
+    asyncres = celery_app.AsyncResult(job_id)
+    typer.echo(f"Status: {asyncres.status}\nResult: {asyncres.result if asyncres.ready() else ''}")
 
 @app.command()
 def chat():

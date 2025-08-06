@@ -39,4 +39,6 @@ dependencies = [
     "python-nmap>=0.7.2",
     "shodan>=1.29.0",
     "censys-search>=2.2.5",
+    "celery[redis]>=5.3.6",
+    "redis>=5.0.0",
 ]
