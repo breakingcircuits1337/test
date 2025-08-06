@@ -41,4 +41,16 @@ dependencies = [
     "censys-search>=2.2.5",
     "celery[redis]>=5.3.6",
     "redis>=5.0.0",
+    "python-nmap>=0.7.2",
+    "shodan>=1.29.0",
+    "censys-search>=2.2.5",
+    "pvporcupine>=3.0.1",
+    "sounddevice>=0.4.6",
+    "playwright>=1.44.0",
+    "browser-use>=0.1.41",
+    "langchain-ollama>=0.0.11",
+    "pillow>=10.3.0",
 ]
+
+[project.scripts]
+ada = "modules.root_cli:app"

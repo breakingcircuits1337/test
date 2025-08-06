@@ -98,6 +98,22 @@ _Most security tools require the relevant external tool and/or API key._
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 
+### One-command Assistant: `ada`
+
+After install/build, you can use a single CLI:
+
+```bash
+ada chat                 # text chat
+ada voice-chat           # always-on voice
+ada webui --port 9000    # launch Web UI
+ada nmap-scan example.com --async
+ada job-status <task-id>
+```
+
+(Or run `ada` from your AppImage.)
+
+---
+
 ### Portable AppImage
 
 Requirements: PyInstaller, appimagetool, redis (at runtime). Build:

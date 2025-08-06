@@ -1,17 +1,13 @@
 import sys
 
 def main():
-    # Launch Web UI by default; fallback to voice_chat
+    # Launch root CLI (ada) by default
     try:
-        from commands import template
+        from modules.root_cli import app
         import typer
-        # try to launch webui; fallback to voice_chat if fails
-        try:
-            typer.run(template.launch_webui)
-        except Exception:
-            typer.run(template.voice_chat)
+        typer.run(app)
     except Exception as e:
-        print(f"Error launching Ada: {e}")
+        print(f"Error launching Ada CLI: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
