@@ -98,6 +98,17 @@ _Most security tools require the relevant external tool and/or API key._
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 
+### Portable AppImage
+
+Requirements: PyInstaller, appimagetool, redis (at runtime). Build:
+```bash
+./appimage/build_appimage.sh 0.1.0
+chmod +x dist/AdaAssistant-0.1.0-x86_64.AppImage
+./dist/AdaAssistant-0.1.0-x86_64.AppImage
+```
+
+Ada will open in always-listening voice mode (or Web UI); press Ctrl+C to quit.
+
 ## Background Jobs (Celery)
 
 Long-running tasks (like port scans, nmap) can run in the background:
