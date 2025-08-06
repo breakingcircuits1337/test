@@ -38,14 +38,20 @@ class PlainAssistant:
         self.brain = get_config("base_assistant.brain")
 
         # Initialize appropriate TTS engine
+        self.engine = None
         if self.voice_type == "elevenlabs":
-            self.logger.info("🔊 Initializing ElevenLabs TTS engine")
-            self.elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVEN_API_KEY"))
+            try:
+                self.logger.info("🔊 Initializing ElevenLabs TTS engine")
+                api_key = os.getenv("ELEVEN_API_KEY")
+                if not api_key:
+                    raise ValueError("ELEVEN_API_KEY is not set.")
+                self.elevenlabs_client = ElevenLabs(api_key=api_key)
+            except Exception as e:
+                self.logger.warning(f"⚠️ ElevenLabs unavailable ({e}); falling back to local TTS.")
+                self.voice_type = "local"
+                self._ensure_local_tts_initialized()
         elif self.voice_type == "local":
-            self.logger.info("🔊 Initializing local TTS engine")
-            self.engine = pyttsx3.init()
-            self.engine.setProperty("rate", 150)  # Speed of speech
-            self.engine.setProperty("volume", 1.0)  # Volume level
+            self._ensure_local_tts_initialized()
         elif self.voice_type == "realtime-tts":
             self.logger.info("🔊 Initializing RealtimeTTS engine")
             self.engine = SystemEngine()
@@ -54,6 +60,14 @@ class PlainAssistant:
             )
         else:
             raise ValueError(f"Unsupported voice type: {self.voice_type}")
+
+    def _ensure_local_tts_initialized(self):
+        if not hasattr(self, "engine") or self.engine is None:
+            import pyttsx3
+            self.logger.info("🔊 Initializing local TTS engine (fallback)")
+            self.engine = pyttsx3.init()
+            self.engine.setProperty("rate", 150)
+            self.engine.setProperty("volume", 1.0)
 
     def process_text(self, text: str) -> str:
         """Process text input and generate response"""
@@ -106,19 +120,23 @@ class PlainAssistant:
             raise
 
     def speak(self, text: str):
-        """Convert text to speech using configured engine"""
-        try:
-            self.logger.info(f"🔊 Speaking: {text}")
-
-            if self.voice_type == "local":
+        """Convert text to speech using configured engine, with fallback."""
+        self.logger.info(f"🔊 Speaking: {text}")
+        if self.voice_type == "local":
+            self._ensure_local_tts_initialized()
+            try:
                 self.engine.say(text)
                 self.engine.runAndWait()
-
-            elif self.voice_type == "realtime-tts":
+            except Exception as e:
+                self.logger.error(f"❌ Local TTS error: {e}")
+        elif self.voice_type == "realtime-tts":
+            try:
                 self.stream.feed(text)
                 self.stream.play()
-
-            elif self.voice_type == "elevenlabs":
+            except Exception as e:
+                self.logger.error(f"❌ RealtimeTTS error: {e}")
+        elif self.voice_type == "elevenlabs":
+            try:
                 audio = self.elevenlabs_client.generate(
                     text=text,
                     voice=self.elevenlabs_voice,
@@ -126,9 +144,13 @@ class PlainAssistant:
                     stream=False,
                 )
                 play(audio)
-
-            self.logger.info(f"🔊 Spoken: {text}")
-
-        except Exception as e:
-            self.logger.error(f"❌ Error in speech synthesis: {str(e)}")
-            raise
+            except Exception as e:
+                self.logger.warning(f"⚠️ ElevenLabs TTS failed ({e}); falling back to local TTS.")
+                self.voice_type = "local"
+                self._ensure_local_tts_initialized()
+                try:
+                    self.engine.say(text)
+                    self.engine.runAndWait()
+                except Exception as e2:
+                    self.logger.error(f"❌ Local TTS error (fallback): {e2}")
+        self.logger.info(f"🔊 Spoken: {text}")

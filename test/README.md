@@ -89,6 +89,8 @@ You can now use these commands via Typer or voice:
 
 _Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
 
+_If ElevenLabs TTS is unavailable or fails, the assistant automatically falls back to local speech output._
+
 **Voice example:**  
 Say: “Ada, ping 8.8.8.8 three times”
 

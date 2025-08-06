@@ -241,23 +241,42 @@ class TyperAgent:
         self.logger.info(f"🤖 Response: '{response}'")
         self.speak(response)
 
+    def _ensure_local_tts_initialized(self):
+        if not hasattr(self, "engine") or self.engine is None:
+            import pyttsx3
+            self.logger.info("🔊 Initializing local TTS engine (fallback)")
+            self.engine = pyttsx3.init()
+            self.engine.setProperty("rate", 150)
+            self.engine.setProperty("volume", 1.0)
+
     def speak(self, text: str):
-
-        start_time = time.time()
+        # If ElevenLabs is set, try; on any error, fallback to local. Only init engine once.
         model = "eleven_flash_v2_5"
-        # model="eleven_flash_v2"
-        # model = "eleven_turbo_v2"
-        # model = "eleven_turbo_v2_5"
-        # model="eleven_multilingual_v2"
         voice = get_config("typer_assistant.elevenlabs_voice")
+        use_elevenlabs = hasattr(self, "elevenlabs_client") and self.elevenlabs_client is not None
 
-        audio_generator = self.elevenlabs_client.generate(
-            text=text,
-            voice=voice,
-            model=model,
-            stream=False,
-        )
-        audio_bytes = b"".join(list(audio_generator))
-        duration = time.time() - start_time
-        self.logger.info(f"Model {model} completed tts in {duration:.2f} seconds")
-        play(audio_bytes)
+        if use_elevenlabs:
+            try:
+                start_time = time.time()
+                audio_generator = self.elevenlabs_client.generate(
+                    text=text,
+                    voice=voice,
+                    model=model,
+                    stream=False,
+                )
+                audio_bytes = b"".join(list(audio_generator))
+                duration = time.time() - start_time
+                self.logger.info(f"Model {model} completed tts in {duration:.2f} seconds")
+                play(audio_bytes)
+                return
+            except Exception as e:
+                self.logger.warning(f"⚠️ ElevenLabs TTS failed ({e}); falling back to local TTS.")
+                self.elevenlabs_client = None  # Avoid reusing broken client
+
+        # Fallback to local TTS
+        self._ensure_local_tts_initialized()
+        try:
+            self.engine.say(text)
+            self.engine.runAndWait()
+        except Exception as e2:
+            self.logger.error(f"❌ Local TTS error (fallback): {e2}")
