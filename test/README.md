@@ -7,7 +7,7 @@
 
 ## Setup
 - `cp .env.sample .env`
-  - Update with your keys `DEEPSEEK_API_KEY` and `ELEVEN_API_KEY`
+  - Update with your keys `DEEPSEEK_API_KEY`, `ELEVEN_API_KEY`, `GEMINI_API_KEY`, `MISTRAL_API_KEY`, and `GROQ_API_KEY`
 - `uv sync`
 - (optional) install python 3.11 (`uv python install 3.11`)
 
@@ -32,6 +32,7 @@ uv run python main_base_assistant.py chat
 1. Awaken the assistant
 ```bash
 uv run python main_typer_assistant.py awaken --typer-file commands/template.py --scratchpad scratchpad.md --mode execute
+# then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
 ```
 
 2. Speak to the assistant
@@ -46,7 +47,7 @@ Open `scratchpad.md` to see the command that was generated.
 
 ### Typer Assistant
 > See `assistant_config.yml` for more details.
-- 🧠 Brain: `Deepseek V3`
+- 🧠 Brain: Selectable! `deepseek-v3`, `gemini`, `mistral`, `groq`, `ollama:<model>`
 - 📝 Job (Prompt(s)): `prompts/typer-commands.xml`
 - 💻 Active Memory (Dynamic Variables): `scratchpad.txt`
 - 👂 Ears (STT): `RealtimeSTT`
@@ -54,11 +55,11 @@ Open `scratchpad.md` to see the command that was generated.
 
 ### Base Assistant
 > See `assistant_config.yml` for more details.
-- 🧠 Brain: `ollama:phi4`
+- 🧠 Brain: Selectable! `gemini` (default), `deepseek-v3`, `mistral`, `groq`, `ollama:<model>`
 - 📝 Job (Prompt(s)): `None`
 - 💻 Active Memory (Dynamic Variables): `none`
 - 👂 Ears (STT): `RealtimeSTT`
-- 🎤 Mouth (TTS): `local`
+- 🎤 Mouth (TTS): `ElevenLabs` (default)
 
 
 ## Resources
@@ -67,3 +68,97 @@ Open `scratchpad.md` to see the command that was generated.
 - whisper https://github.com/openai/whisper
 - examples https://github.com/KoljaB/RealtimeSTT/blob/master/tests/realtimestt_speechendpoint_binary_classified.py
 - elevenlabs voice models: https://elevenlabs.io/docs/developer-guides/models#older-models
+
+- **LAN Scanner**: Trigger from voice or Typer using the `ip_port_scan` command.  
+  Requires `gradio` to be installed.  
+  Example CLI:
+  ```bash
+  uv run python main_typer_assistant.py awaken --typer-file commands/template.py --scratchpad scratchpad.md --mode execute
+  # then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
+  ```
+
+## Network & Security Skills
+
+You can now use these commands via Typer or voice:
+- `network_ping` – Ping a host
+- `network_traceroute` – Traceroute to a host
+- `network_dns_lookup` – DNS lookup for a domain
+- `network_port_scan` – TCP SYN port scan on a host
+- `network_interface_info` – Show all network interface info (as JSON)
+- `network_tcp_test` – Test TCP connection to a host/port
+
+- `nmap_scan` – Run nmap for advanced port/service scans
+- `nikto_scan` – Nikto web vulnerability scan
+- `wapiti_scan` – Wapiti web vulnerability scan
+- `shodan_lookup` – Search Shodan for Internet-exposed hosts/services
+- `censys_lookup` – Query Censys for asset details
+- `exploit_search` – Search Exploit-DB or local searchsploit for exploits
+
+_Most security tools require the relevant external tool and/or API key._
+
+_Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
+
+## Background Jobs (Celery)
+
+Long-running tasks (like port scans, nmap) can run in the background:
+```bash
+celery -A modules.celery_app.celery_app worker --loglevel=info
+uv run python commands/template.py ip-port-scan ... --async
+uv run python commands/template.py nmap-scan ... --async
+uv run python commands/template.py job-status <task-id>
+```
+
+## Text + Voice Chat
+
+You can chat naturally in text (with TTS speech for replies) using:
+
+```bash
+uv run python commands/template.py chat
+```
+
+Or use the voice interface (speech-to-text, always-on):
+
+```bash
+uv run python commands/template.py voice-chat
+```
+
+Type your messages and Ada will reply and speak.
+
+_If ElevenLabs TTS is unavailable or fails, the assistant automatically falls back to local speech output._
+
+_On-device wake-word detection (Porcupine) is used for voice commands; works fully offline._
+
+**Voice example:**  
+Say: “Ada, ping 8.8.8.8 three times”
+
+## Gradio Web UI
+
+Start the assistant's Web UI via CLI:
+
+```bash
+uv run python commands/template.py launch-webui --ip 0.0.0.0 --port 9000
+```
+
+_Note: Requires `browser-use`, `playwright`, `langchain-ollama`, and `pillow` for full Web UI functionality._
+
+## Network Diagnostics
+
+- `network_ping` — ping a host (`Ada, ping 8.8.8.8 three times`)
+- `network_traceroute` — trace route to a host
+- `network_dns_lookup` — resolve a DNS record
+- `network_port_scan` — scan ports on a host
+- `network_interface_info` — show interface info as JSON
+- `network_tcp_test` — test TCP connection to host:port
+
+You can invoke these via Typer or by saying the command in conversation.
+
+## LLM Providers
+
+You can now choose the AI "brain" for both the Typer Assistant and Base Assistant in `assistant_config.yml`:
+- `deepseek-v3`
+- `gemini` (Google Gemini, requires `GEMINI_API_KEY`)
+- `mistral` (Mistral AI, requires `MISTRAL_API_KEY`)
+- `groq` (Groq Cloud, requires `GROQ_API_KEY`)
+- `ollama:<model>` (local models via Ollama, e.g., `ollama:phi4`)
+
+Update your `.env` with the appropriate keys for your chosen provider.

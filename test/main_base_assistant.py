@@ -16,60 +16,45 @@ def ping():
 
 @app.command()
 def chat():
-    """Start a chat session with the plain assistant using speech input"""
+    """Start a chat session with the plain assistant using voice input and wake-word."""
+    from modules.voice_listener import VoiceListener
     # Create session and logging
     session_id = create_session_logger_id()
     logger = setup_logging(session_id)
     logger.info(f"🚀 Starting chat session {session_id}")
 
-    # Create assistant
-    assistant = PlainAssistant(logger, session_id)
-
-    # Configure STT recorder
-    recorder = AudioToTextRecorder(
-        spinner=True,
-        model="tiny.en",
-        language="en",
-        print_transcription_time=True,
-    )
-
-    def process_text(text):
-        """Process user speech input"""
-        try:
-
-            assistant_name = get_config("base_assistant.assistant_name")
-            if assistant_name.lower() not in text.lower():
-                logger.info(f"🤖 Not {assistant_name} - ignoring")
-                return
-
-            # Check for exit commands
-            if text.lower() in ["exit", "quit"]:
+    # Create assistant, pass interrupt_flag
+    listener = None
+    try:
+        # We'll pass the listener's interrupt_flag so TTS can be interrupted by voice
+        def voice_callback(text):
+            # You can add exit/quit check here if desired
+            if text.strip().lower() in ["exit", "quit"]:
                 logger.info("👋 Exiting chat session")
+                if listener:
+                    listener.stop()
                 return False
-
-            # Process input and get response
-            recorder.stop()
             response = assistant.process_text(text)
             logger.info(f"🤖 Response: {response}")
-            recorder.start()
-
             return True
 
-        except Exception as e:
-            logger.error(f"❌ Error occurred: {str(e)}")
-            raise
+        listener = VoiceListener(callback=None)  # assign callback after assistant instantiation
+        assistant = PlainAssistant(logger, session_id, interrupt_flag=listener.interrupt_flag)
+        listener.callback = voice_callback
 
-    try:
-        print("🎤 Speak now... (say 'exit' or 'quit' to end)")
+        print("🎤 Say 'Ada' to begin speaking. (Ctrl+C to quit)")
+        listener.start()
         while True:
-            recorder.text(process_text)
+            time.sleep(1)
 
     except KeyboardInterrupt:
         logger.info("👋 Session ended by user")
-        raise KeyboardInterrupt
     except Exception as e:
         logger.error(f"❌ Error occurred: {str(e)}")
         raise
+    finally:
+        if listener:
+            listener.stop()
 
 
 if __name__ == "__main__":

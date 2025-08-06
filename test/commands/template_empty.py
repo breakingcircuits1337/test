@@ -1,372 +1,115 @@
 import typer
-from typing import Optional
-
-app = typer.Typer()
-
 
 @app.command()
-def ping_server(
-    wait: bool = typer.Option(False, "--wait", help="Wait for server response?")
-):
-    """
-    Pings the server, optionally waiting for a response.
-    """
+def ip_port_scan(target: str = typer.Argument(...), port_mode: str = typer.Option("Common Ports", "--mode"),
+                 custom_ports: str = typer.Option("", "--custom"), threads: int = typer.Option(50, "--threads"),
+                 timeout: float = typer.Option(0.5, "--timeout"), no_discover: bool = typer.Option(False, "--no-discover"),
+                 async_: bool = typer.Option(False, "--async")):
+    """Stub ip_port_scan (Celery-ready)."""
     pass
-
 
 @app.command()
-def show_config(
-    verbose: bool = typer.Option(False, "--verbose", help="Show config in detail?")
-):
-    """
-    Shows the current configuration.
-    """
+def nmap_scan(target: str = typer.Argument(...), flags: str = typer.Option("-sV -T4", "--flags"), async_: bool = typer.Option(False, "--async")):
+    """Stub nmap_scan (Celery-ready)."""
     pass
-
 
 @app.command()
-def list_files(
-    path: str = typer.Argument(..., help="Path to list files from"),
-    all_files: bool = typer.Option(False, "--all", help="Include hidden files"),
-):
-    """
-    Lists files in a directory. Optionally show hidden files.
-    """
+def job_status(job_id:str):
+    """Stub job status."""
     pass
-
 
 @app.command()
-def create_user(
-    username: str = typer.Argument(..., help="Name of the new user"),
-    role: str = typer.Option("guest", "--role", help="Role for the new user"),
-):
-    """
-    Creates a new user with an optional role.
-    """
+def chat():
+    """(Stub) Start a natural language chat with Ada."""
+    print("Text chat not implemented in template_empty.py (stub).")
     pass
-
 
 @app.command()
-def delete_user(
-    user_id: str = typer.Argument(..., help="ID of user to delete"),
-    confirm: bool = typer.Option(False, "--confirm", help="Skip confirmation prompt"),
-):
-    """
-    Deletes a user by ID.
-    """
+def voice_chat():
+    """(Stub) Start voice conversation with Ada (uses STT)."""
     pass
-
 
 @app.command()
-def generate_report(
-    report_type: str = typer.Argument(..., help="Type of report to generate"),
-    output_file: str = typer.Option("report.json", "--output", help="Output file name"),
-):
-    """
-    Generates a report of a specified type to a given file.
-    """
+def nmap_scan(target: str = typer.Argument(...), flags: str = typer.Option("-sV -T4", "--flags")):
+    """Stub nmap scan."""
     pass
-
 
 @app.command()
-def backup_data(
-    directory: str = typer.Argument(..., help="Directory to store backups"),
-    full: bool = typer.Option(False, "--full", help="Perform a full backup"),
-):
-    """
-    Back up data to a specified directory, optionally performing a full backup.
-    """
+def nikto_scan(url: str = typer.Argument(...), options: str = typer.Option("", "--options")):
+    """Stub nikto scan."""
     pass
-
 
 @app.command()
-def restore_data(
-    file_path: str = typer.Argument(..., help="File path of backup to restore"),
-    overwrite: bool = typer.Option(
-        False, "--overwrite", help="Overwrite existing data"
-    ),
-):
-    """
-    Restores data from a backup file.
-    """
+def wapiti_scan(url: str = typer.Argument(...), scope: str = typer.Option("folder", "--scope")):
+    """Stub wapiti scan."""
     pass
-
 
 @app.command()
-def summarize_logs(
-    logs_path: str = typer.Argument(..., help="Path to log files"),
-    lines: int = typer.Option(100, "--lines", help="Number of lines to summarize"),
-):
-    """
-    Summarizes log data from a specified path, limiting lines.
-    """
+def shodan_lookup(query: str = typer.Argument(...)):
+    """Stub shodan lookup."""
     pass
-
 
 @app.command()
-def upload_file(
-    file_path: str = typer.Argument(..., help="Path of file to upload"),
-    destination: str = typer.Option(
-        "remote", "--destination", help="Destination label"
-    ),
-    secure: bool = typer.Option(True, "--secure", help="Use secure upload"),
-):
-    """
-    Uploads a file to a destination, optionally enforcing secure upload.
-    """
+def censys_lookup(ip: str = typer.Argument(...)):
+    """Stub censys lookup."""
     pass
-
 
 @app.command()
-def download_file(
-    url: str = typer.Argument(..., help="URL of file to download"),
-    output_path: str = typer.Option(".", "--output", help="Local output path"),
-    retry: int = typer.Option(3, "--retry", help="Number of times to retry"),
-):
-    """
-    Downloads a file from a URL with a specified number of retries.
-    """
+def exploit_search(keyword: str = typer.Argument(...)):
+    """Stub exploit search."""
     pass
-
 
 @app.command()
-def filter_records(
-    source: str = typer.Argument(..., help="Data source to filter"),
-    query: str = typer.Option("", "--query", help="Filtering query string"),
-    limit: int = typer.Option(10, "--limit", help="Limit the number of results"),
-):
-    """
-    Filters records from a data source using a query, limiting the number of results.
-    """
-    pass
-
+def network_ping(ip: str = typer.Argument(..., help="Target IP to ping"),
+                 count: int = typer.Option(1, "--count", help="Number of packets"),
+                 packet_size: int = typer.Option(56, "--size", help="Packet size"),
+                 timeout: int = typer.Option(1, "--timeout", help="Timeout per packet (seconds)")):
+    """Ping a host."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.ping(ip, count, packet_size, timeout)
 
 @app.command()
-def validate_schema(
-    schema_file: str = typer.Argument(..., help="Path to schema file"),
-    data_file: str = typer.Option("", "--data", help="Path to data file to check"),
-    strict: bool = typer.Option(True, "--strict", help="Enforce strict validation"),
-):
-    """
-    Validates a schema, optionally checking a data file with strict mode.
-    """
-    pass
-
+def network_traceroute(ip: str = typer.Argument(..., help="Target IP for traceroute"),
+                       max_hops: int = typer.Option(30, "--max-hops", help="Max hops"),
+                       packet_size: int = typer.Option(40, "--size", help="Packet size")):
+    """Traceroute to a host."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.traceroute(ip, max_hops, packet_size)
 
 @app.command()
-def sync_remotes(
-    remote_name: str = typer.Argument(..., help="Name of remote to sync"),
-    force: bool = typer.Option(
-        False, "--force", help="Force syncing without prompting"
-    ),
-):
-    """
-    Syncs with a remote repository, optionally forcing the operation.
-    """
-    pass
-
+def network_dns_lookup(domain: str = typer.Argument(..., help="Domain to query"),
+                       record_type: str = typer.Option("A", "--type", help="DNS record type"),
+                       dns_server: str = typer.Option("8.8.8.8", "--server", help="DNS server")):
+    """DNS lookup."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.dns_lookup(domain, record_type, dns_server)
 
 @app.command()
-def simulate_run(
-    scenario: str = typer.Argument(..., help="Simulation scenario"),
-    cycles: int = typer.Option(5, "--cycles", help="Number of cycles to simulate"),
-    debug: bool = typer.Option(False, "--debug", help="Show debug output"),
-):
-    """
-    Simulates a scenario for a given number of cycles, optionally showing debug output.
-    """
-    pass
-
+def network_port_scan(ip: str = typer.Argument(..., help="Target IP for port scan"),
+                      start_port: int = typer.Option(1, "--start", help="Start port"),
+                      end_port: int = typer.Option(1024, "--end", help="End port")):
+    """Port scan using TCP SYN."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.port_scan(ip, start_port, end_port)
 
 @app.command()
-def compare_files(
-    file_a: str = typer.Argument(..., help="First file to compare"),
-    file_b: str = typer.Argument(..., help="Second file to compare"),
-    diff_only: bool = typer.Option(
-        False, "--diff-only", help="Show only the differences"
-    ),
-):
-    """
-    Compares two files, optionally showing only differences.
-    """
-    pass
-
+def network_interface_info():
+    """Show interface info (JSON)."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.interface_info()
 
 @app.command()
-def encrypt_data(
-    input_path: str = typer.Argument(..., help="Path of the file to encrypt"),
-    output_path: str = typer.Option("encrypted.bin", "--output", help="Output file"),
-    algorithm: str = typer.Option("AES", "--algorithm", help="Encryption algorithm"),
-):
-    """
-    Encrypts data using a specified algorithm and writes to an output file.
-    """
-    pass
-
+def network_tcp_test(host: str = typer.Argument(..., help="Host for TCP test"),
+                     port: int = typer.Argument(..., help="Port"),
+                     timeout: int = typer.Option(5, "--timeout", help="Timeout (seconds)")):
+    """Test TCP connection to host:port."""
+    from modules import network_skills_wrapper
+    return network_skills_wrapper.tcp_test(host, port, timeout)
 
 @app.command()
-def decrypt_data(
-    encrypted_file: str = typer.Argument(..., help="Path to encrypted file"),
-    key: str = typer.Option(..., "--key", help="Decryption key"),
-    output_path: str = typer.Option("decrypted.txt", "--output", help="Output file"),
-):
-    """
-    Decrypts an encrypted file using a key.
-    """
-    pass
-
-
-@app.command()
-def transform_data(
-    input_file: str = typer.Argument(..., help="File to transform"),
-    output_format: str = typer.Option("json", "--format", help="Output format"),
-    columns: str = typer.Option(
-        None, "--columns", help="Comma-separated columns to extract"
-    ),
-):
-    """
-    Transforms data from a file into a specified format, optionally extracting columns.
-    """
-    pass
-
-
-@app.command()
-def upload_changes(
-    source_dir: str = typer.Argument(..., help="Directory of changes to upload"),
-    incremental: bool = typer.Option(False, "--incremental", help="Incremental upload"),
-    confirm: bool = typer.Option(False, "--confirm", help="Skip confirmation prompt"),
-):
-    """
-    Uploads changes from a directory, optionally in incremental mode.
-    """
-    pass
-
-
-@app.command()
-def migrate_database(
-    old_db: str = typer.Argument(..., help="Path to old database"),
-    new_db: str = typer.Option(..., "--new-db", help="Path to new database"),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Perform a trial run without changing data"
-    ),
-):
-    """
-    Migrates data from an old database to a new one, optionally doing a dry run.
-    """
-    pass
-
-
-@app.command()
-def health_check(
-    service_name: str = typer.Argument(..., help="Service to check"),
-    timeout: int = typer.Option(30, "--timeout", help="Timeout in seconds"),
-    alert: bool = typer.Option(False, "--alert", help="Send alert if check fails"),
-):
-    """
-    Checks the health of a service within a specified timeout, optionally sending alerts.
-    """
-    pass
-
-
-@app.command()
-def search_logs(
-    keyword: str = typer.Argument(..., help="Keyword to search"),
-    log_file: str = typer.Option("system.log", "--log", help="Log file to search in"),
-    case_sensitive: bool = typer.Option(
-        False, "--case-sensitive", help="Enable case-sensitive search"
-    ),
-):
-    """
-    Searches for a keyword in a log file, optionally using case-sensitive mode.
-    """
-    pass
-
-
-@app.command()
-def stats_by_date(
-    date: str = typer.Argument(..., help="Date in YYYY-MM-DD to query stats"),
-    show_raw: bool = typer.Option(False, "--show-raw", help="Display raw data"),
-):
-    """
-    Shows statistics for a specific date, optionally displaying raw data.
-    """
-    pass
-
-
-@app.command()
-def publish_update(
-    version: str = typer.Argument(..., help="Version tag to publish"),
-    channel: str = typer.Option("stable", "--channel", help="Release channel"),
-    note: str = typer.Option("", "--note", help="Release note or description"),
-):
-    """
-    Publishes an update to a specified release channel with optional notes.
-    """
-    pass
-
-
-@app.command()
-def check_version(
-    local_path: str = typer.Argument(..., help="Local path to check"),
-    remote_url: str = typer.Option("", "--remote", help="Remote URL for comparison"),
-    detailed: bool = typer.Option(
-        False, "--detailed", help="Show detailed version info"
-    ),
-):
-    """
-    Checks the version of a local path against a remote source, optionally showing details.
-    """
-    pass
-
-
-@app.command()
-def queue_task(
-    task_name: str = typer.Argument(..., help="Name of the task to queue"),
-    priority: int = typer.Option(1, "--priority", help="Priority of the task"),
-    delay: int = typer.Option(
-        0, "--delay", help="Delay in seconds before starting task"
-    ),
-):
-    """
-    Queues a task with a specified priority and optional delay.
-    """
-    pass
-
-
-@app.command()
-def remove_task(
-    task_id: str = typer.Argument(..., help="ID of the task to remove"),
-    force: bool = typer.Option(False, "--force", help="Remove without confirmation"),
-):
-    """
-    Removes a queued task by ID, optionally forcing removal without confirmation.
-    """
-    pass
-
-
-@app.command()
-def list_tasks(
-    show_all: bool = typer.Option(
-        False, "--all", help="Show all tasks, including completed"
-    ),
-    sort_by: str = typer.Option(
-        "priority", "--sort-by", help="Sort tasks by this field"
-    ),
-):
-    """
-    Lists tasks, optionally including completed tasks or sorting by a different field.
-    """
-    pass
-
-
-@app.command()
-def inspect_task(
-    task_id: str = typer.Argument(..., help="ID of the task to inspect"),
-    json_output: bool = typer.Option(
-        False, "--json", help="Show output in JSON format"
-    ),
-):
-    """
-    Inspects a specific task by ID, optionally in JSON format.
-    """
-    pass
+def launch_webui(ip: str = typer.Option("127.0.0.1", "--ip"),
+                 port: int = typer.Option(7788, "--port"),
+                 theme: str = typer.Option("Ocean", "--theme")):
+    """Start the Gradio Web UI."""
+    from modules import webui_launcher
+    return webui_launcher.launch(ip, port, theme)
