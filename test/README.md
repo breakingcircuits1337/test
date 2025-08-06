@@ -32,6 +32,7 @@ uv run python main_base_assistant.py chat
 1. Awaken the assistant
 ```bash
 uv run python main_typer_assistant.py awaken --typer-file commands/template.py --scratchpad scratchpad.md --mode execute
+# then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
 ```
 
 2. Speak to the assistant
@@ -67,6 +68,14 @@ Open `scratchpad.md` to see the command that was generated.
 - whisper https://github.com/openai/whisper
 - examples https://github.com/KoljaB/RealtimeSTT/blob/master/tests/realtimestt_speechendpoint_binary_classified.py
 - elevenlabs voice models: https://elevenlabs.io/docs/developer-guides/models#older-models
+
+- **LAN Scanner**: Trigger from voice or Typer using the `ip_port_scan` command.  
+  Requires `gradio` to be installed.  
+  Example CLI:
+  ```bash
+  uv run python main_typer_assistant.py awaken --typer-file commands/template.py --scratchpad scratchpad.md --mode execute
+  # then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
+  ```
 
 ## LLM Providers
 
