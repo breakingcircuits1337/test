@@ -3,6 +3,20 @@ import logging
 import os
 from modules.deepseek import conversational_prompt as deepseek_conversational_prompt
 from modules.ollama import conversational_prompt as ollama_conversational_prompt
+
+# New LLM provider imports, guarded
+try:
+    from modules.gemini import conversational_prompt as gemini_conversational_prompt
+except ImportError:
+    gemini_conversational_prompt = None
+try:
+    from modules.mistral import conversational_prompt as mistral_conversational_prompt
+except ImportError:
+    mistral_conversational_prompt = None
+try:
+    from modules.groq import conversational_prompt as groq_conversational_prompt
+except ImportError:
+    groq_conversational_prompt = None
 from modules.utils import build_file_name_session
 from RealtimeTTS import TextToAudioStream, SystemEngine
 from elevenlabs import play
@@ -24,7 +38,10 @@ class PlainAssistant:
         self.brain = get_config("base_assistant.brain")
 
         # Initialize appropriate TTS engine
-        if self.voice_type == "local":
+        if self.voice_type == "elevenlabs":
+            self.logger.info("🔊 Initializing ElevenLabs TTS engine")
+            self.elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVEN_API_KEY"))
+        elif self.voice_type == "local":
             self.logger.info("🔊 Initializing local TTS engine")
             self.engine = pyttsx3.init()
             self.engine.setProperty("rate", 150)  # Speed of speech
@@ -35,9 +52,6 @@ class PlainAssistant:
             self.stream = TextToAudioStream(
                 self.engine, frames_per_buffer=256, playout_chunk_size=1024
             )
-        elif self.voice_type == "elevenlabs":
-            self.logger.info("🔊 Initializing ElevenLabs TTS engine")
-            self.elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVEN_API_KEY"))
         else:
             raise ValueError(f"Unsupported voice type: {self.voice_type}")
 
@@ -58,11 +72,24 @@ class PlainAssistant:
 
             # Generate response using configured brain
             self.logger.info(f"🤖 Processing text with {self.brain}...")
+            # Routing based on self.brain
             if self.brain.startswith("ollama:"):
                 model_no_prefix = ":".join(self.brain.split(":")[1:])
                 response = ollama_conversational_prompt(
                     self.conversation_history, model=model_no_prefix
                 )
+            elif self.brain.startswith("gemini"):
+                if gemini_conversational_prompt is None:
+                    raise ImportError("Gemini provider not available (missing dependency).")
+                response = gemini_conversational_prompt(self.conversation_history)
+            elif self.brain.startswith("mistral"):
+                if mistral_conversational_prompt is None:
+                    raise ImportError("Mistral provider not available (missing dependency).")
+                response = mistral_conversational_prompt(self.conversation_history)
+            elif self.brain.startswith("groq"):
+                if groq_conversational_prompt is None:
+                    raise ImportError("Groq provider not available (missing dependency).")
+                response = groq_conversational_prompt(self.conversation_history)
             else:
                 response = deepseek_conversational_prompt(self.conversation_history)
 

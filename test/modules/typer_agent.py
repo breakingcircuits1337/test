@@ -8,7 +8,21 @@ from modules.utils import (
     create_session_logger_id,
     setup_logging,
 )
-from modules.deepseek import prefix_prompt
+from modules.deepseek import prefix_prompt as deepseek_prefix_prompt
+
+# New LLM providers
+try:
+    from modules.gemini import prefix_prompt as gemini_prefix_prompt
+except ImportError:
+    gemini_prefix_prompt = None
+try:
+    from modules.mistral import prefix_prompt as mistral_prefix_prompt
+except ImportError:
+    mistral_prefix_prompt = None
+try:
+    from modules.groq import prefix_prompt as groq_prefix_prompt
+except ImportError:
+    groq_prefix_prompt = None
 from modules.execute_python import execute_uv_python, execute
 from elevenlabs import play
 from elevenlabs.client import ElevenLabs
@@ -134,10 +148,24 @@ class TyperAgent:
                 typer_file, scratchpad, context_files, text
             )
 
-            # Generate command using DeepSeek
-            self.logger.info("🤖 Processing text with DeepSeek...")
+            # Choose brain for command-generation
+            brain = get_config("typer_assistant.brain") if "typer_assistant.brain" in open("assistant_config.yml").read() else "deepseek-v3"
             prefix = f"uv run python {typer_file}"
-            command = prefix_prompt(prompt=formatted_prompt, prefix=prefix)
+
+            if brain.startswith("gemini"):
+                if gemini_prefix_prompt is None:
+                    raise ImportError("Gemini provider not available (missing dependency).")
+                command = gemini_prefix_prompt(prompt=formatted_prompt, prefix=prefix)
+            elif brain.startswith("mistral"):
+                if mistral_prefix_prompt is None:
+                    raise ImportError("Mistral provider not available (missing dependency).")
+                command = mistral_prefix_prompt(prompt=formatted_prompt, prefix=prefix)
+            elif brain.startswith("groq"):
+                if groq_prefix_prompt is None:
+                    raise ImportError("Groq provider not available (missing dependency).")
+                command = groq_prefix_prompt(prompt=formatted_prompt, prefix=prefix)
+            else:  # deepseek fallback
+                command = deepseek_prefix_prompt(prompt=formatted_prompt, prefix=prefix)
 
             if command == prefix.strip():
                 self.logger.info(f"🤖 Command not found for '{text}'")

@@ -7,7 +7,7 @@
 
 ## Setup
 - `cp .env.sample .env`
-  - Update with your keys `DEEPSEEK_API_KEY` and `ELEVEN_API_KEY`
+  - Update with your keys `DEEPSEEK_API_KEY`, `ELEVEN_API_KEY`, `GEMINI_API_KEY`, `MISTRAL_API_KEY`, and `GROQ_API_KEY`
 - `uv sync`
 - (optional) install python 3.11 (`uv python install 3.11`)
 
@@ -46,7 +46,7 @@ Open `scratchpad.md` to see the command that was generated.
 
 ### Typer Assistant
 > See `assistant_config.yml` for more details.
-- 🧠 Brain: `Deepseek V3`
+- 🧠 Brain: Selectable! `deepseek-v3`, `gemini`, `mistral`, `groq`, `ollama:<model>`
 - 📝 Job (Prompt(s)): `prompts/typer-commands.xml`
 - 💻 Active Memory (Dynamic Variables): `scratchpad.txt`
 - 👂 Ears (STT): `RealtimeSTT`
@@ -54,11 +54,11 @@ Open `scratchpad.md` to see the command that was generated.
 
 ### Base Assistant
 > See `assistant_config.yml` for more details.
-- 🧠 Brain: `ollama:phi4`
+- 🧠 Brain: Selectable! `gemini` (default), `deepseek-v3`, `mistral`, `groq`, `ollama:<model>`
 - 📝 Job (Prompt(s)): `None`
 - 💻 Active Memory (Dynamic Variables): `none`
 - 👂 Ears (STT): `RealtimeSTT`
-- 🎤 Mouth (TTS): `local`
+- 🎤 Mouth (TTS): `ElevenLabs` (default)
 
 
 ## Resources
@@ -67,3 +67,14 @@ Open `scratchpad.md` to see the command that was generated.
 - whisper https://github.com/openai/whisper
 - examples https://github.com/KoljaB/RealtimeSTT/blob/master/tests/realtimestt_speechendpoint_binary_classified.py
 - elevenlabs voice models: https://elevenlabs.io/docs/developer-guides/models#older-models
+
+## LLM Providers
+
+You can now choose the AI "brain" for both the Typer Assistant and Base Assistant in `assistant_config.yml`:
+- `deepseek-v3`
+- `gemini` (Google Gemini, requires `GEMINI_API_KEY`)
+- `mistral` (Mistral AI, requires `MISTRAL_API_KEY`)
+- `groq` (Groq Cloud, requires `GROQ_API_KEY`)
+- `ollama:<model>` (local models via Ollama, e.g., `ollama:phi4`)
+
+Update your `.env` with the appropriate keys for your chosen provider.
