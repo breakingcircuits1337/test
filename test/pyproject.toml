@@ -26,4 +26,8 @@ dependencies = [
     "realtimetts[system]==0.4.40",
     "pyttsx3>=2.98",
     "gradio>=4.31.0",
+    "scapy>=2.5.0",
+    "psutil>=5.9.8",
+    "dnspython>=2.6.1",
+    "requests>=2.31.0",
 ]

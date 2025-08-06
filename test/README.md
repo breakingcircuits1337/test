@@ -77,6 +77,32 @@ Open `scratchpad.md` to see the command that was generated.
   # then say: "Ada, scan my network at 192.168.1.0/24 using common ports"
   ```
 
+## Network Diagnostic Skills
+
+You can now use these commands via Typer or voice:
+- `network_ping` – Ping a host
+- `network_traceroute` – Traceroute to a host
+- `network_dns_lookup` – DNS lookup for a domain
+- `network_port_scan` – TCP SYN port scan on a host
+- `network_interface_info` – Show all network interface info (as JSON)
+- `network_tcp_test` – Test TCP connection to a host/port
+
+_Note: Requires `scapy`, `psutil`, `dnspython`, and `requests` in your Python environment._
+
+**Voice example:**  
+Say: “Ada, ping 8.8.8.8 three times”
+
+## Network Diagnostics
+
+- `network_ping` — ping a host (`Ada, ping 8.8.8.8 three times`)
+- `network_traceroute` — trace route to a host
+- `network_dns_lookup` — resolve a DNS record
+- `network_port_scan` — scan ports on a host
+- `network_interface_info` — show interface info as JSON
+- `network_tcp_test` — test TCP connection to host:port
+
+You can invoke these via Typer or by saying the command in conversation.
+
 ## LLM Providers
 
 You can now choose the AI "brain" for both the Typer Assistant and Base Assistant in `assistant_config.yml`:
