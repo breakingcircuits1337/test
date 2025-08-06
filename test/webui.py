@@ -1006,10 +1006,97 @@ def create_ui(config, theme_name="Ocean"):
     .disclaimer { color: orange; font-weight: bold; margin-bottom: 10px; }
     """ # Added disclaimer style
 
+    import asyncio
+    import shlex
+    import subprocess
+    import sys
+
     with gr.Blocks(title="Browser Use WebUI", theme=theme_map.get(theme_name, Ocean()), css=css) as demo:
         gr.Markdown("# 🌐 Browser Use WebUI\n### Control your browser with AI assistance", elem_classes=["header-text"])
 
         with gr.Tabs() as tabs:
+            # === CLI Console Tab ===
+            with gr.TabItem("🖥️ CLI Console"):
+                cli_cmd = gr.Textbox(label="Command", placeholder="Any Typer command, e.g., network_ping 8.8.8.8 --count 3", lines=1)
+                cli_run_btn = gr.Button("Run", variant="primary")
+                cli_output = gr.Textbox(label="Output", lines=12, interactive=False)
+                cli_status = gr.Textbox(label="", lines=1, interactive=False, visible=False)
+                def run_cli(cmd):
+                    import sys, subprocess, shlex
+                    if not cmd.strip():
+                        return "", "Please enter a command."
+                    try:
+                        proc = subprocess.run([sys.executable, "commands/template.py", *shlex.split(cmd)], capture_output=True, text=True)
+                        out = proc.stdout + proc.stderr
+                        return out, ""
+                    except Exception as e:
+                        return "", f"Error: {e}"
+                cli_run_btn.click(fn=run_cli, inputs=cli_cmd, outputs=[cli_output, cli_status])
+
+            # === Settings Tab ===
+            with gr.TabItem("🔑 Settings"):
+                from modules import settings_manager
+
+                # Textboxes for API keys
+                env_boxes = {}
+                for k in settings_manager.ENV_KEYS:
+                    env_boxes[k] = gr.Textbox(label=k, placeholder=f"{k} value")
+
+                # Drop-downs for core config
+                config_keys = ["base_assistant.brain", "typer_assistant.brain", "base_assistant.voice", "typer_assistant.voice"]
+                config_dropdowns = {}
+                # Reasonable defaults for options
+                brain_choices = ["deepseek-v3", "gemini", "mistral", "groq", "ollama:phi4"]
+                voice_choices = ["elevenlabs", "local", "realtime-tts"]
+                config_dropdowns["base_assistant.brain"] = gr.Dropdown(brain_choices, label="Base Assistant Brain", value="gemini")
+                config_dropdowns["typer_assistant.brain"] = gr.Dropdown(brain_choices, label="Typer Assistant Brain", value="deepseek-v3")
+                config_dropdowns["base_assistant.voice"] = gr.Dropdown(voice_choices, label="Base Voice", value="elevenlabs")
+                config_dropdowns["typer_assistant.voice"] = gr.Dropdown(voice_choices, label="Typer Voice", value="elevenlabs")
+
+                settings_status = gr.Textbox(label="Status", lines=1, interactive=False)
+
+                def load_settings():
+                    env = settings_manager.load_env_keys()
+                    cfg = settings_manager.load_assistant_config()
+                    values = []
+                    for k in settings_manager.ENV_KEYS:
+                        values.append(env.get(k, ""))
+                    for ck in config_keys:
+                        # Dot notation walk
+                        parts = ck.split(".")
+                        val = cfg
+                        for p in parts:
+                            val = val.get(p, {}) if isinstance(val, dict) else ""
+                        if isinstance(val, dict):
+                            val = ""
+                        values.append(val if val else "")
+                    return values + ["Loaded."]
+
+                def save_settings(*args):
+                    env_vals = {k: args[i] for i, k in enumerate(settings_manager.ENV_KEYS)}
+                    cfg_vals = args[len(settings_manager.ENV_KEYS):len(settings_manager.ENV_KEYS)+len(config_keys)]
+                    # Save ENV
+                    settings_manager.save_env_keys(env_vals)
+                    # Save YAML config
+                    # Load, update dict
+                    cfg = settings_manager.load_assistant_config()
+                    for i, ck in enumerate(config_keys):
+                        parts = ck.split(".")
+                        d = cfg
+                        for p in parts[:-1]:
+                            if p not in d or not isinstance(d[p], dict):
+                                d[p] = {}
+                            d = d[p]
+                        d[parts[-1]] = cfg_vals[i]
+                    settings_manager.save_assistant_config(cfg)
+                    return "Saved."
+
+                load_btn = gr.Button("Load", variant="secondary")
+                save_btn = gr.Button("Save", variant="primary")
+                # Order of outputs must match order of inputs above
+                all_inputs = [env_boxes[k] for k in settings_manager.ENV_KEYS] + [config_dropdowns[ck] for ck in config_keys]
+                load_btn.click(fn=load_settings, inputs=[], outputs=all_inputs + [settings_status])
+                save_btn.click(fn=save_settings, inputs=all_inputs, outputs=[settings_status])
             with gr.TabItem("⚙️ Agent Settings", id=1):
                 with gr.Group():
                     agent_type = gr.Radio(["org", "custom"], label="Agent Type", value=config.get('agent_type', 'custom'), info="Select agent type") # pen_test type is handled internally now
